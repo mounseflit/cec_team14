@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Team 14 : Binatna & CEC </title>
+  <link rel="icon" href="/assets/images/logo.png" type="image/x-icon">
+  <link href="/assets/styles/style.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/d3-array@3.2.0/dist/d3-array.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-scale@4.0.2/dist/d3-scale.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.26.5/dist/globe.gl.min.js"></script>
+</head>
+
+<body>
+	
+  <div id="earth"></div>
+   <div class="container">
+    <br><button id="showButton" class="shower">👁️<br><div class="dov" style="color: #fff; font-size: x-small;"><u>View Menu</u></div></button>
+    <div class="inner">
+		<h1 style="text-align:center; font-size: larger; font-weight: bolder; color: rgb(0, 0, 0);">3D planes accidents Visualisation</h1>
+	   <label for="dataset" style="text-align: center;"></label><br>
+      <select name="dataset" id="dataset" style="width: auto; padding: 10px; font-size: 16px; border: 1px solid #000000; border-radius: 5px;">
+        <option value="None" style="background-color: #f5f5f500; color: #333;">High Quality Earth</option>
+        <option value="cec" style="background-color: #f5f5f500; color: #333;">CEC & Binatna Data</option>
+      </select>   
+      <br>
+      <input id="sub" type="submit" value="Submit"
+        style="text-align: center; background-color: #050505; color: #fff; border: 2px solid #00000000; border-radius: 10px;  box-shadow: 0 0 10px #000000; padding: 10px 20px; cursor: pointer;"
+        onclick="showpts()">
+
+		<a href="https://github.com/binatnadata"><h5 style="text-align: center; text-decoration: none; color: #000000;">@CEC_Team14</h5></a>
+
+      <br><button id="closeButton" class="close-button">×</button>
+    </div>
+
+    
+  </div>
+  <script src="/assets/scripts/globe.js"></script>
+  <script src="/assets/scripts/three.js"></script>
+  <script>
+
+    const closeButton = document.getElementById("closeButton");
+    closeButton.addEventListener("click", () => {
+      document.querySelector(".inner").style.visibility = "hidden";
+      document.querySelector(".shower").style.visibility = "visible";
+    });
+
+    const showButton = document.getElementById("showButton");
+    showButton.addEventListener("click", () => {
+      document.querySelector(".shower").style.visibility = "hidden";
+      document.querySelector(".inner").style.visibility = "visible";
+    });
+
+    const elem = document.getElementById('earth');
+   
+
+     const earth = Globe({ animateIn: false })
+        (document.getElementById('earth'))
+        .globeImageUrl('/assets/images/surface.jpg')
+        .bumpImageUrl('/assets/images/bumpmap.jpg')
+        .backgroundImageUrl('/assets/images/space.png')
+        .showGraticules(false)
+        .showAtmosphere(false);
+ 
+      earth.controls().autoRotate = true;
+      earth.controls().autoRotateSpeed = 0.35;
+  
+      
+      const CLOUDS_IMG_URL = '/assets/images/clouds.png'; 
+      const CLOUDS_ALT = 0.004;
+      const CLOUDS_ROTATION_SPEED = -0.006; 
+  
+      new THREE.TextureLoader().load(CLOUDS_IMG_URL, cloudsTexture => {
+        const clouds = new THREE.Mesh(
+          new THREE.SphereGeometry(earth.getGlobeRadius() * (1 + CLOUDS_ALT), 75, 75),
+          new THREE.MeshPhongMaterial({ map: cloudsTexture, transparent: true })
+        );
+        earth.scene().add(clouds);
+  
+        (function rotateClouds() {
+          clouds.rotation.y += CLOUDS_ROTATION_SPEED * Math.PI / 180;
+          requestAnimationFrame(rotateClouds);
+        })();
+      });
+
+    function showpts() {
+      a = document.getElementById("dataset").value;
+      console.log(a);
+      if (a == "cec") {
+        const colorScale = d3.scaleOrdinal(['red']);
+
+
+        const elem = document.getElementById('earth');
+
+
+        const earth = Globe()
+          .globeImageUrl('/assets/images/surface.jpg')
+          .bumpImageUrl('/assets/images/bumpmap.jpg')
+          .backgroundImageUrl('/assets/images/space.png')
+          .showGraticules(true)
+          .showAtmosphere(false) 
+          .labelText("rien")
+          .labelSize(1.7)
+          .labelDotRadius(0.7)
+          //.labelDotOrientation(d => labelsTopOrientation.has(d.label) ? 'top' : 'bottom')
+          .labelColor(d => colorScale(d.lng))
+          .labelLabel(d => `
+            <div><b>💥 CrashSite: ${d.label}</b><br></div>
+            <div><b>🕞 Date & Time: ${d.Time}</b><br></div>
+            <div><b>🔗 Coordinates: <i>${d.lat}°N, ${d.lng}°E</i></b></div>
+            <div><p>📌 This crash reason summary is ${d.Summary}</div></p>
+          `)
+          .onLabelClick(d => window.open(d.Summary, '_blank'))
+          (elem);
+
+        
+        earth.controls().autoRotate = true;
+        earth.controls().autoRotateSpeed = 0.1;
+  
+     
+      fetch('/assets/data/data.json').then(r => r.json()).then(crashSites => {
+          earth.labelsData(crashSites);
+        });
+  
+     }else   {
+
+
+
+
+
+     const earth = Globe({ animateIn: false })
+        (document.getElementById('earth'))
+        .globeImageUrl('/assets/images/surface.jpg')
+        .bumpImageUrl('/assets/images/bumpmap.jpg')
+        .backgroundImageUrl('/assets/images/space.png')
+        .showGraticules(false)
+        .showAtmosphere(false);
+  
+   
+      earth.controls().autoRotate = true;
+      earth.controls().autoRotateSpeed = 0.35;
+  
+      const CLOUDS_IMG_URL = '/assets/images/clouds.png'; 
+      const CLOUDS_ALT = 0.004;
+      const CLOUDS_ROTATION_SPEED = -0.006; 
+  
+      new THREE.TextureLoader().load(CLOUDS_IMG_URL, cloudsTexture => {
+        const clouds = new THREE.Mesh(
+          new THREE.SphereGeometry(earth.getGlobeRadius() * (1 + CLOUDS_ALT), 75, 75),
+          new THREE.MeshPhongMaterial({ map: cloudsTexture, transparent: true })
+        );
+        earth.scene().add(clouds);
+  
+        (function rotateClouds() {
+          clouds.rotation.y += CLOUDS_ROTATION_SPEED * Math.PI / 180;
+          requestAnimationFrame(rotateClouds);
+        })();
+      });
+
+
+      
+
+setData()
+}
+}
+
+
+  </script>
+
+</body>
+
+</html>
